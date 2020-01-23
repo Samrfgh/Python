@@ -1,7 +1,6 @@
 import turtle
 import time
 import random
-from tkinter import *
 
 delay = 0.1
 score = 0
