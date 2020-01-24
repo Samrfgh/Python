@@ -16,7 +16,7 @@ pen = turtle.Turtle()
 def screen_setup():
     root.title("Snake")
     root.bgcolor("black")
-    root.setup(width=600,height=600)
+    root.setup(width=650,height=700)
     root.tracer(0)
 
 # snake head
@@ -44,8 +44,33 @@ def score_init():
     pen.color("white")
     pen.penup()
     pen.ht()
-    pen.goto(0,260)
+    pen.goto(0,300)
     pen.write("Score: 0  High Score: 0", align = "center", font = ("Monaco", 24, "normal"))
+
+def draw_boundary():
+    t1 = turtle.Turtle()
+    t2 = turtle.Turtle()
+    t3 = turtle.Turtle()
+    t4 = turtle.Turtle()
+    t1.ht()
+    t2.ht()
+    t3.ht()
+    t4.ht()
+    t1.goto(-291,291)
+    t2.goto(-291,-291)
+    t3.goto(291,-291)
+    t4.goto(291,291)
+    t1.color("white")
+    t2.color("white")
+    t3.color("white")
+    t4.color("white")
+    t1.forward(582)
+    t2.left(90)
+    t2.forward(582)
+    t3.left(180)
+    t3.forward(582)
+    t4.left(270)
+    t4.forward(582)
 
 def move():
     if head.direction == "up" :
@@ -80,6 +105,12 @@ def go_right():
     if head.direction != "left":
         head.direction = "right"
 
+def in_body(x,y):
+    for i in segments:
+        if i.xcor() == x and i.ycor() == y:
+            return 0
+    return 1
+
 # keyboard bindings
 def key_bind():
     root.listen()
@@ -98,6 +129,7 @@ head_init()
 food_init()
 score_init()
 key_bind()
+draw_boundary()
 
 while True:
     root.update()
@@ -118,6 +150,13 @@ while True:
         # move food
         x = random.randint(-14,14)
         y = random.randint(-14,14)
+
+        while True:
+            if in_body(x,y) == 0:
+                x = random.randint(-14,13)
+                y = random.randint(-14,13)
+            else: break
+
         food.goto(x*20,y*20)
 
         # add snake length
