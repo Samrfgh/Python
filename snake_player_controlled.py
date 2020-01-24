@@ -151,11 +151,9 @@ while True:
         x = random.randint(-14,14)
         y = random.randint(-14,14)
 
-        while True:
-            if in_body(x,y) == 0:
-                x = random.randint(-14,13)
-                y = random.randint(-14,13)
-            else: break
+        while in_body(x,y) == 0:
+            x = random.randint(-14,13)
+            y = random.randint(-14,13)
 
         food.goto(x*20,y*20)
 
