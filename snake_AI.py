@@ -3,14 +3,17 @@ import time
 import random
 from tkinter import *
 
-delay = 0.01
+delay = 0.1
 score = 0
 high = 0
+global cycle_id
 cycle_id = 419
+
 segments = []
 vis = []
 path = []
 positions = []
+d1 = []
 
 root = turtle.Screen()
 head = turtle.Turtle()
@@ -78,21 +81,62 @@ def draw_boundary():
     t4.left(270)
     t4.forward(562)
 
+def cache_cycle_path():
+    x = -14
+    y = 13
+    for i in range(0, 784):
+        d1.append((x,y))
+        if path[i] == 'D': y -= 1
+        if path[i] == 'R': x += 1
+        if path[i] == 'L': x -= 1
+        if path[i] == 'U': y += 1
+
+def dist(u, v):
+    if u <= v: return v - u
+    else: return 784 - u + v
+
+def can_jump_up(x,y):
+    if (x,y+1) in d1 and head.direction != "down":
+        if d1.index((x,y+1)) <= d1.index(food_pos):
+            return d1.index((x,y+1))
+    return -1
+
+def can_jump_right(x,y):
+    if (x+1,y) in d1 and head.direction != "left":
+        if d1.index((x+1,y)) <= d1.index(food_pos):
+            return d1.index((x+1,y))
+    return -1
+
+def can_jump_left(x,y):
+    if (x-1,y) in d1 and head.direction != "right":
+        if d1.index((x-1,y)) <= d1.index(food_pos):
+            return d1.index((x-1,y))
+    return -1
+
+def jump_selection(x,y):
+    a = can_jump_up(x,y)
+    b = can_jump_right(x,y)
+    c = can_jump_left(x,y)
+    m = max(a,b,c)
+    if m == -1 or dist(m,d1.index(food_pos)) > dist(cycle_id,d1.index(food_pos)) : return 0
+    if m == a: return 1
+    if m == b: return 2
+    if m == c: return 3
+
 def move():
+    x = head.xcor()
+    y = head.ycor()
+
     if head.direction == "up" :
-        y = head.ycor()
         head.sety(y + 20)
 
     if head.direction == "down" :
-        y = head.ycor()
         head.sety(y - 20)
 
     if head.direction == "left" :
-        x = head.xcor()
         head.setx(x - 20)
 
     if head.direction == "right" :
-        x = head.xcor()
         head.setx(x + 20)
 
 def go_up():
@@ -125,8 +169,11 @@ head_init()
 food_init()
 score_init()
 draw_boundary()
+cache_cycle_path()
+food_pos = (0,5)
 
 while True:
+
     root.update()
     if len(segments) == 783:
         print("VICTORY")
@@ -153,6 +200,7 @@ while True:
             else: break
 
         food.goto(x*20,y*20)
+        food_pos = (x,y)
 
         # add snake length
         seg = turtle.Turtle()
@@ -178,12 +226,31 @@ while True:
         y = head.ycor()
         segments[0].goto(x,y)
 
-    if path[cycle_id] == 'U': go_up()
-    if path[cycle_id] == 'D': go_down()
-    if path[cycle_id] == 'L': go_left()
-    if path[cycle_id] == 'R': go_right()
+    x = head.xcor()/20
+    y = head.ycor()/20
+
+    t = jump_selection(x,y)
+    print(t)
+    if t == 0:
+        if path[cycle_id] == 'U': go_up()
+        if path[cycle_id] == 'D': go_down()
+        if path[cycle_id] == 'L': go_left()
+        if path[cycle_id] == 'R': go_right()
+        cycle_id = (cycle_id + 1) % 784
+
+    elif t == 1:
+        head.direction = "up"
+        cycle_id = d1.index((x,y+1))
+
+    elif t == 2:
+        head.direction = "right"
+        cycle_id = d1.index((x+1,y))
+
+    elif t == 3:
+        head.direction = "left"
+        cycle_id = d1.index((x-1,y))
+
     move()
-    cycle_id = (cycle_id + 1) % 784
 
     # check for body collisions
     for i in segments:
@@ -198,6 +265,6 @@ while True:
             pen.clear()
             pen.write("Score: {}  High Score: {}".format(score,high), align = "center", font = ("Monaco", 24, "normal"))
 
-    #time.sleep(delay)
+    time.sleep(delay)
 
 root.mainloop()
