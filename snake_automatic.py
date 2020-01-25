@@ -2,7 +2,7 @@ import turtle
 import time
 import random
 
-delay = 0.1
+delay = 0.01
 score = 0
 high = 0
 cycle_id = 419
@@ -94,27 +94,35 @@ def dist(u, v):
     else: return 784 - u + v
 
 def contains_segment(s, e):
+    t1 = []
     for i in segments:
-        x = (s + 1) % 784
-        while x != e + 1:
-            if (i.xcor()/20,i.ycor()/20) == d1[x]: return 1
-            x = (x + 1) % 784
+        t1.append((int(i.xcor()/20),int(i.ycor()/20)))
+    t2 = set(t1)
+    x = (s + 1) % 784
+    while x != e + 1:
+        if d1[x] in t2: return 1
+        x = (x + 1) % 784
+
+
     return 0
 
 def can_jump_up(x,y):
-    if (x,y+1) in d1 and head.direction != "down" and in_body(x,y+1) == 1:
-        if d1.index((x,y+1)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x,y+1))) == 0:
-            return d1.index((x,y+1))
+    if (x,y+1) in d1 and head.direction != "down":
+        if contains_segment(d1.index((x,y)),d1.index((x,y+1))) == 0:
+            if d1.index((x,y+1)) <= d1.index(food_pos):
+                return d1.index((x,y+1))
+            elif d1.index((x,y+1)) > d1.index(food_pos) and d1.index((x,y)) > d1.index(food_pos) and y < food_pos[1]:
+                return d1.index((x,y+1))
     return -1
 
 def can_jump_right(x,y):
-    if (x+1,y) in d1 and head.direction != "left" and in_body(x+1,y) == 1:
+    if (x+1,y) in d1 and head.direction != "left":
         if d1.index((x+1,y)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x+1,y))) == 0:
             return d1.index((x+1,y))
     return -1
 
 def can_jump_left(x,y):
-    if (x-1,y) in d1 and head.direction != "right" and in_body(x-1,y) == 1:
+    if (x-1,y) in d1 and head.direction != "right":
         if d1.index((x-1,y)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x-1,y))) == 0:
             return d1.index((x-1,y))
     return -1
@@ -186,7 +194,16 @@ while True:
     root.update()
 
     if len(segments) == 783:
-        print("VICTORY")
+        time.sleep(1)
+        head.goto(0,0)
+        head.direction = "stop"
+        for i in segments:
+            i.goto(1000,1000)
+        segments.clear()
+        score = 0
+        cycle_id = 419
+        pen.clear()
+        pen.write("Score: {}  High Score: {}".format(score,high), align = "center", font = ("Monaco", 24, "normal"))
 
     # check for collision
     if head.xcor() > 290 or head.xcor() < -290 or head.ycor() > 290 or head.ycor() < -290:
@@ -280,6 +297,6 @@ while True:
             pen.clear()
             pen.write("Score: {}  High Score: {}".format(score,high), align = "center", font = ("Monaco", 24, "normal"))
 
-    #time.sleep(delay)
+    time.sleep(delay)
 
 root.mainloop()

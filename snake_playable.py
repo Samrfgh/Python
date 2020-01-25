@@ -107,7 +107,7 @@ def go_right():
 
 def in_body(x,y):
     for i in segments:
-        if i.xcor() == x and i.ycor() == y:
+        if i.xcor()/20 == x and i.ycor()/20 == y:
             return 0
     return 1
 
@@ -151,9 +151,11 @@ while True:
         x = random.randint(-14,14)
         y = random.randint(-14,14)
 
-        while in_body(x,y) == 0:
-            x = random.randint(-14,13)
-            y = random.randint(-14,13)
+        while True:
+            if in_body(x,y) == 0:
+                x = random.randint(-14,13)
+                y = random.randint(-14,13)
+            else: break
 
         food.goto(x*20,y*20)
 
