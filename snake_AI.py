@@ -1,12 +1,10 @@
 import turtle
 import time
 import random
-from tkinter import *
 
 delay = 0.1
 score = 0
 high = 0
-global cycle_id
 cycle_id = 419
 
 segments = []
@@ -33,7 +31,7 @@ def head_init():
     head.color("#42D816")
     head.shape("square")
     head.penup()
-    head.turtlesize(0.9,0.9,0.9)
+    head.turtlesize(1,1,1)
     head.goto(0,0)
     head.direction = "stop"
 
@@ -95,21 +93,29 @@ def dist(u, v):
     if u <= v: return v - u
     else: return 784 - u + v
 
+def contains_segment(s, e):
+    for i in segments:
+        x = (s + 1) % 784
+        while x != e + 1:
+            if (i.xcor()/20,i.ycor()/20) == d1[x]: return 1
+            x = (x + 1) % 784
+    return 0
+
 def can_jump_up(x,y):
-    if (x,y+1) in d1 and head.direction != "down":
-        if d1.index((x,y+1)) <= d1.index(food_pos):
+    if (x,y+1) in d1 and head.direction != "down" and in_body(x,y+1) == 1:
+        if d1.index((x,y+1)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x,y+1))) == 0:
             return d1.index((x,y+1))
     return -1
 
 def can_jump_right(x,y):
-    if (x+1,y) in d1 and head.direction != "left":
-        if d1.index((x+1,y)) <= d1.index(food_pos):
+    if (x+1,y) in d1 and head.direction != "left" and in_body(x+1,y) == 1:
+        if d1.index((x+1,y)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x+1,y))) == 0:
             return d1.index((x+1,y))
     return -1
 
 def can_jump_left(x,y):
-    if (x-1,y) in d1 and head.direction != "right":
-        if d1.index((x-1,y)) <= d1.index(food_pos):
+    if (x-1,y) in d1 and head.direction != "right" and in_body(x-1,y) == 1:
+        if d1.index((x-1,y)) <= d1.index(food_pos) and contains_segment(d1.index((x,y)),d1.index((x-1,y))) == 0:
             return d1.index((x-1,y))
     return -1
 
@@ -118,7 +124,8 @@ def jump_selection(x,y):
     b = can_jump_right(x,y)
     c = can_jump_left(x,y)
     m = max(a,b,c)
-    if m == -1 or dist(m,d1.index(food_pos)) > dist(cycle_id,d1.index(food_pos)) : return 0
+    if m == -1 or dist(m,d1.index(food_pos)) > dist(cycle_id,d1.index(food_pos)) or expanded == 1:
+        return 0
     if m == a: return 1
     if m == b: return 2
     if m == c: return 3
@@ -156,8 +163,9 @@ def go_right():
         head.direction = "right"
 
 def in_body(x,y):
+    if head.xcor()/20 == x and head.ycor()/20 == y: return 0
     for i in segments:
-        if i.xcor() == x and i.ycor() == y:
+        if i.xcor()/20 == x and i.ycor()/20 == y:
             return 0
     return 1
 
@@ -171,12 +179,15 @@ score_init()
 draw_boundary()
 cache_cycle_path()
 food_pos = (0,5)
+expanded = 0
 
 while True:
 
     root.update()
+
     if len(segments) == 783:
         print("VICTORY")
+
     # check for collision
     if head.xcor() > 290 or head.xcor() < -290 or head.ycor() > 290 or head.ycor() < -290:
         time.sleep(1)
@@ -186,11 +197,12 @@ while True:
             i.goto(1000,1000)
         segments.clear()
         score = 0
+        cycle_id = 419
         pen.clear()
         pen.write("Score: {}  High Score: {}".format(score,high), align = "center", font = ("Monaco", 24, "normal"))
 
+    # move food
     if head.distance(food) < 20 :
-        # move food
         x = random.randint(-14,13)
         y = random.randint(-14,13)
         while True:
@@ -201,6 +213,7 @@ while True:
 
         food.goto(x*20,y*20)
         food_pos = (x,y)
+        expanded = 1
 
         # add snake length
         seg = turtle.Turtle()
@@ -230,7 +243,8 @@ while True:
     y = head.ycor()/20
 
     t = jump_selection(x,y)
-    print(t)
+    expanded = 0
+    # detect jumps
     if t == 0:
         if path[cycle_id] == 'U': go_up()
         if path[cycle_id] == 'D': go_down()
@@ -262,9 +276,10 @@ while True:
                 i.goto(1000,1000)
             segments.clear()
             score = 0
+            cycle_id = 419
             pen.clear()
             pen.write("Score: {}  High Score: {}".format(score,high), align = "center", font = ("Monaco", 24, "normal"))
 
-    time.sleep(delay)
+    #time.sleep(delay)
 
 root.mainloop()
