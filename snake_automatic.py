@@ -41,7 +41,14 @@ def food_init():
     food.color("red")
     food.shape("circle")
     food.penup()
-    food.goto(0,100)
+    x = random.randint(-14,13)
+    y = random.randint(-14,13)
+    while True:
+        if x == 0 and y == 0:
+            x = random.randint(-14,13)
+            y = random.randint(-14,13)
+        break;
+    food.goto(x,y)
     food.turtlesize(0.9,0.9,0.9)
     food.direction = "stop"
 
@@ -55,17 +62,14 @@ def score_init():
     pen.write("Score: 0  High Score: 0", align = "center", font = ("Monaco", 24, "normal"))
 
 def draw_boundary():
-    border = turtle.Turtle()
-    border.speed(0)
-    border.color("white")
-    border.penup()
-    border.ht()
-    border.goto(-291,-291)
-    border.pensize(3)
-    border.pendown()
+    t1 = turtle.Turtle()
+    t1.ht()
+    t1.pensize(3)
+    t1.goto(-291,271)
+    t1.color("white")
     for i in range(4):
-        border.fd(582)
-        border.lt(90)
+        t1.forward(562)
+        t1.left(270)
 
 def cache_cycle_path():
     x = -14
@@ -90,8 +94,6 @@ def contains_segment(s, e):
     while x != e + 1:
         if d1[x] in t2: return 1
         x = (x + 1) % 784
-
-
     return 0
 
 def can_jump_up(x,y):
@@ -174,7 +176,7 @@ food_init()
 score_init()
 draw_boundary()
 cache_cycle_path()
-food_pos = (0,5)
+food_pos = (food.xcor()/20,food.ycor()/20)
 expanded = 0
 
 while True:
